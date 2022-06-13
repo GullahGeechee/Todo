@@ -1,28 +1,26 @@
 const express = require('express')
-const TodoModel= require('../model/todoSchema')
+const authmiddleware = require('../middleware/authmiddleware')
+const TodoModel = require('../model/todoSchema')
+
 // * Create a Router
 const router = express.Router()
 
-
 //* GET TODOS
-router.get('/', async (req, res) => {
-    try {
-        const todos = await TodoModel.find()
-        res.status(200).json(todos)
-    } catch (error) {
-        console.log(error)
-    }
- })
+router.get('/', authmiddleware, async (req, res) => {
+   try {
+       const todos = await TodoModel.find()
+       res.status(200).json(todos)
+   } catch (error) {
+       console.log(error)
+   }
+})
 
-
-
-
-//*Create Todos 
-router.post('/', async (req, res) => {
+//* CREATE TODOS
+router.post('/', authmiddleware, async (req, res) => {
     const todoData = req.body // gets the data from the request
-
+    console.log(todoData);
     try {
-        const todo = await TodoModel.create(todoData) // create todo in the db
+        const todo = await TodoModel.create(todoData) // create the todo in the db
         // send back the response
         res.status(201).json(todo)
         // res.status(201).json({data: todo})
@@ -31,9 +29,10 @@ router.post('/', async (req, res) => {
         res.status(400).json('Bad request!')
     }
 })
-// get todo by ID 
+
+
 //* GET TODO BY ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authmiddleware, async (req, res) => {
     const id = req.params.id
 
     try {
@@ -42,13 +41,14 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         console.error(error)
         res.status(400).json({
-            msg:'Id not found'
+            msg: 'Id not found'
         })
     }
 })
 
+
 //* UPDATE TODO BY ID
-router.put('/:id', async (req, res) => {
+router.put('/:id', authmiddleware, async (req, res) => {
     const id = req.params.id
     const newTodoData = req.body
      try {
@@ -61,16 +61,15 @@ router.put('/:id', async (req, res) => {
 })
 
 //! DELETE A TODO
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authmiddleware, async (req, res) => {
     const id = req.params.id
 
     try {
         const todo = await TodoModel.findByIdAndDelete(id)
-        res.status(200).json({msg:"Todo deleted!"})
+        res.status(200).json({msg: 'Todo was deleted!'})
     } catch (error) {
         console.log(error);
     }
 })
-
 
 module.exports = router

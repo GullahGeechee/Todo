@@ -1,9 +1,9 @@
 const express = require('express')
 const UserModel = require('../model/usersSchema')
 // pulls out the two function we need from express validator
-const {check, validationResult, body} = require('express-validator')
+const {check, validationResult} = require('express-validator')
 const bcrypt = require('bcrypt')
-const 
+const jwt = require('jsonwebtoken')
 
 // * Create a Router
 const router = express.Router()
@@ -18,7 +18,7 @@ router.post('/', [
     const userData = req.body
 
     const errors = validationResult(req)
-
+    // Checks for validation errors
     if (!errors.isEmpty()){
         return res.json(errors.array())
     }
@@ -41,7 +41,21 @@ router.post('/', [
         // Write the user to the db
         const user = await UserModel.create(userData)
 
-        res.status(201).json(user)
+        //* create a new JWT Token
+
+        const payload = {
+            id: user._id,
+            email: user.email
+        }
+
+        const SECRET_KEY='MY_SECRET_KEY'
+
+        const TOKEN = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "2 Days"})
+
+        res.status(201).json({
+            user: user,
+            token: TOKEN
+        })
         
     } catch (error) {
         console.log(error)
